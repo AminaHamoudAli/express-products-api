@@ -1,9 +1,10 @@
-// controllers/productsController.js
 const mongoose = require('mongoose');
 const Product = require('../models/productModel');
 
+// تحقق من صحة ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+// جلب كل المنتجات
 exports.getAllProducts = async (req, res) => {
   try {
     const products = await Product.find({});
@@ -14,6 +15,7 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+// جلب منتج واحد
 exports.getSingleProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -29,9 +31,15 @@ exports.getSingleProduct = async (req, res) => {
   }
 };
 
+// إنشاء منتج جديد مع إشعار Socket.io
 exports.createProduct = async (req, res) => {
   try {
     const product = await Product.create(req.body);
+
+    // إرسال إشعار لجميع العملاء المتصلين
+    const io = req.app.get('io');
+    if (io) io.emit('newProduct', product);
+
     res.status(201).json(product);
   } catch (err) {
     console.error(err);
@@ -42,6 +50,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+// تحديث منتج
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -63,6 +72,7 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// حذف منتج
 exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
